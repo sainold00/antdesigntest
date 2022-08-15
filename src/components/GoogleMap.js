@@ -1,19 +1,23 @@
-import React, { Component } from "react";
+import React, { Component, useEffect, useState } from "react";
+//antdesign
+import { Col, Divider, Row, Button, Pagination } from "antd";
+import "antd/dist/antd.css";
+//css
+import "../App.css"
 //map
 import { Map, Marker, GoogleApiWrapper } from "google-maps-react";
 import PlacesAutocomplete, {
   geocodeByAddress,
   getLatLng,
 } from "react-places-autocomplete";
-//antdesign
-import { Col, Divider, Row, Input, Button } from "antd";
-import "antd/dist/antd.css";
+
 const style = {
-  background: "#0092ff",
-  padding: "8px 0",
+  background: "#395B64",
+  padding: "5%",
 };
 
-//note: code formatted for ES6 here
+
+
 export class MapContainer extends Component {
   constructor(props) {
     super(props);
@@ -72,11 +76,12 @@ export class MapContainer extends Component {
     }
   };
 
+ 
   handleChange = (address) => {
     this.setState({ address });
   };
 
-  handleSelect = (address) => {
+   handleSelect = (address) => {
     geocodeByAddress(address)
       .then((results) => getLatLng(results[0]))
       .then((latLng) => {
@@ -84,10 +89,25 @@ export class MapContainer extends Component {
         this.setState({ address });
         this.setState({ mapCenter: latLng });
       })
-      .catch((error) => console.error("Error", error));
+      .catch((error) => console.error("Error", error)); 
   };
+  
+
+  
 
   render() {
+    const locLat = this.state.mapCenter.lat
+    const locLng = this.state.mapCenter.lng
+    
+    const currentDate = new Date()
+    const timestamp = currentDate.getTime()/1000
+    const apikey = 'AIzaSyBCbAbPimMJH-U5J0i69zNqNwOCyXI9Bc0'
+    
+    const apicall = 'https://maps.googleapis.com/maps/api/timezone/json?location=' + locLat + "," + locLng + '&timestamp=' + timestamp + '&key=' + apikey
+
+    
+    
+    // console.log(apicall)
     return (
       <>
         <Row
@@ -100,7 +120,7 @@ export class MapContainer extends Component {
         >
           <Divider></Divider>
           <Col className="gutter-row" span={24}>
-            <Button onClick={this.getLocation}>Get Location</Button>
+            <Button onClick={this.getLocation}>Get Your Location</Button>
             <br />
             <br />
             <p>Latitude: {this.state.latitude}</p>
@@ -108,8 +128,10 @@ export class MapContainer extends Component {
           </Col>
           <Divider></Divider>
           <Col className="gutter-row" span={12}>
+            
             <div style={style}>
               <div>
+                <h2>Search Location</h2>
                 <PlacesAutocomplete
                   value={this.state.address}
                   onChange={this.handleChange}
@@ -127,7 +149,9 @@ export class MapContainer extends Component {
                           placeholder: "Search Places ...",
                           className: "location-search-input",
                         })}
+                        
                       />
+                      <button type="submit">Search</button>
                       <div className="autocomplete-dropdown-container">
                         {loading && <div>Loading...</div>}
                         {suggestions.map((suggestion) => {
@@ -158,19 +182,23 @@ export class MapContainer extends Component {
           </Col>
           <Col className="gutter-row" span={12}>
             <div style={style}>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-              enim ad minim veniam, quis nostrud exercitation ullamco laboris
-              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
-              reprehenderit in voluptate velit esse cillum dolore eu fugiat
-              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
-              sunt in culpa qui officia deserunt mollit anim id est laborum.
+              <h2>Search History</h2>
+              <p>{this.state.address}</p>
+              <Pagination defaultCurrent={1} total={500} />;
             </div>
           </Col>
           <Divider></Divider>
+          <Col className="gutter-row" span={24}>
+            <h2>Map Currently Displaying:</h2>
+            <p>Latitude: {this.state.mapCenter.lat}</p>
+            <p>Longitude: {this.state.mapCenter.lng}</p>
+            <Button href= {apicall}>Get Time Zone</Button>
+          </Col>
         </Row>
+        
 
         <Map
+          className="googleMap"
           google={this.props.google}
           initialCenter={{
             lat: this.state.mapCenter.lat,
